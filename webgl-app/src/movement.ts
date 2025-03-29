@@ -3,6 +3,10 @@ import * as Three from 'three';
 const movement = { reset: false, resetRotation: false, forward: false, backward: false, left: false, right: false, rotationLeft: false, rotationRight: false, rotationUp: false, rotationDown: false };
 const speed = 0.1;
 const rotationSpeed = 0.02;
+let firstTime = true;
+
+let position: Three.Vector3;
+let rotation: Three.Euler;
 
 // Track key states
 window.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -55,10 +59,24 @@ window.addEventListener('keyup', (e: KeyboardEvent) => {
     case 'a': movement.left = movement.rotationLeft  = false; break;
     case 'd': movement.right = movement.rotationRight = false; break;
   }
+  //save to local storage
+  localStorage.setItem('cameraPosition', JSON.stringify(position));
+  localStorage.setItem('cameraRotation', JSON.stringify(rotation));
 });
 
 // Update movement in animation loop
 const updateMovement = (camera: Three.PerspectiveCamera) => {
+  if (firstTime) {
+    const cameraPosition = localStorage.getItem('cameraPosition');
+    const cameraRotation = localStorage.getItem('cameraRotation');
+    if (cameraPosition) {
+      camera.position.copy(JSON.parse(cameraPosition));
+    }
+    if (cameraRotation) {
+      camera.rotation.copy(JSON.parse(cameraRotation));
+    }
+    firstTime = false;
+  }
   const direction = new Three.Vector3();
   camera.getWorldDirection(direction); // Get the direction camera is facing
 
@@ -87,6 +105,9 @@ const updateMovement = (camera: Three.PerspectiveCamera) => {
   if (movement.resetRotation) {
     camera.rotation.set(0, 0, 0);
   }
+
+  position = camera.position.clone();
+  rotation = camera.rotation.clone();
 };
 
 export default updateMovement;
