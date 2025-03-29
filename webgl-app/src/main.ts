@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { generateTerrain } from './world/terrain.ts';
+import { generateSphere, generateTerrain } from './world/terrain.ts';
 import updateMovement from './movement.ts';
 
 const scene = new Three.Scene();
@@ -14,11 +14,13 @@ light.position.set(10, 10, 10);
 scene.add(light);
 
 // flat surface
-const plane = generateTerrain(50);
+const plane = generateTerrain(80);
+const sphere = generateSphere(60);
+scene.add(sphere);
 scene.add(plane);
 
 // camera
-camera.position.set(0, 20, 20);
+camera.position.set(0, 45, 45);
 camera.lookAt(0, 0, 0);
 
 
