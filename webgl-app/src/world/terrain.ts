@@ -2,7 +2,7 @@ import * as SimplexNoise from 'simplex-noise';
 import * as THREE from 'three';
 import alea from 'alea';
 
-const SEED = '12dsd3fsd'; // Change this to get a different world
+const SEED = '12d00003fsd'; // Change this to get a different world
 
 // Create a seeded PRNG for deterministic noise
 const prng = alea(SEED);
@@ -10,20 +10,53 @@ const noise = SimplexNoise.createNoise2D(prng);
 
 // Generate terrain height at given coordinates
 export function getHeight(x: number, z: number): number {
-  const scale = 0.1; // Controls the "stretch" of the landscape
+  const scale = 0.05; // Controls the "stretch" of the landscape
   const octaves = 4; // Number of noise layers
-  let amplitude = 10; // Max terrain height
+  let amplitude = 2; // Max terrain height
   let height = 0;
   let frequency = scale;
 
   for (let i = 0; i < octaves; i++) {
     height += noise(x * frequency, z * frequency) * amplitude;
-    amplitude *= 0.5; // Reduce amplitude (but not до нуля, як у тебе)
-    frequency *= 2; // Increase frequency
+    amplitude *= 0.5; // Reduce amplitude (but not to ground zero)
+    frequency *= 1.8; // Increase frequency
   }
 
   return height;
 }
+
+//generate a sphere around the terrain
+export function generateSphere(radius: number): THREE.Mesh {
+  const geometry = new THREE.SphereGeometry(radius, 32, 32);
+
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      topColor: { value: new THREE.Color(0x1e3a8a) },   // dark blue (top)
+      bottomColor: { value: new THREE.Color(0x60a5fa) } // light blue (bottom)
+    },
+    vertexShader: `
+      varying vec3 vPosition;
+      void main() {
+        vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 topColor;
+      uniform vec3 bottomColor;
+      varying vec3 vPosition;
+      void main() {
+        float mixValue = (vPosition.y + 50.0) / 100.0; // normalisation Y from -50 to 50
+        gl_FragColor = vec4(mix(bottomColor, topColor, mixValue), 1.0);
+      }
+    `,
+    side: THREE.BackSide
+  });
+
+  return new THREE.Mesh(geometry, material);
+}
+
+
 
 // Generate terrain mesh
 export function generateTerrain(size: number): THREE.Mesh {
