@@ -28,18 +28,48 @@ function createTree(x: number, z: number): Three.Group {
 
 
 
-// Generate multiple trees
+// Generate multiple trees based on noise
 export function generateTrees(size: number, count: number): Three.Group {
   const trees = new Three.Group();
   const maxTreeHeight = getMaxTreeHeight(size);
+  const noise = getNoise();
 
-  for (let i = 0; i < count; i++) {
-    const x = (Math.random() - 0.5) * size;
-    const z = (Math.random() - 0.5) * size;
-    const y = getHeight(x, z);
+  // Number of grid cells (more cells = more precise placement)
+  const gridSize = Math.ceil(Math.sqrt(count) * 1.5);
+  // const cellSize = size / gridSize;
 
-    if (y < maxTreeHeight) {
-      trees.add(createTree(x, z));
+  // Create a grid for potential tree positions
+  for (let gridX = 0; gridX < gridSize; gridX++) {
+    for (let gridZ = 0; gridZ < gridSize; gridZ++) {
+      // Convert grid position to world coordinates
+      const baseX = (gridX / gridSize - 0.5) * size;
+      const baseZ = (gridZ / gridSize - 0.5) * size;
+
+      // Add some variety within the cell
+      const jitterX = 0;//(Math.random() - 0.5) * cellSize * 0.8;
+      const jitterZ = 0;//(Math.random() - 0.5) * cellSize * 0.8;
+
+      const x = baseX + jitterX;
+      const z = baseZ + jitterZ;
+
+      // Use noise to determine if we place a tree here
+      // Scale the coordinates for the noise function
+      const noiseValue = noise(x * 0.1, z * 0.1);
+
+      // Only place trees where noise value is positive (creates natural clusters)
+      if (noiseValue > 0.2) {
+        const y = getHeight(x, z);
+
+        // Only place trees below the maximum tree height
+        if (y < maxTreeHeight) {
+          trees.add(createTree(x, z));
+        }
+      }
+
+      // Exit if we've placed enough trees
+      if (trees.children.length >= count) {
+        return trees;
+      }
     }
   }
 

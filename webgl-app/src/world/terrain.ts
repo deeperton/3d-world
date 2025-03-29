@@ -2,7 +2,8 @@ import * as SimplexNoise from 'simplex-noise';
 import * as THREE from 'three';
 import alea from 'alea';
 
-const SEED = '12d00003fsd'; // Change this to get a different world
+// const SEED = '12d00003fsd'; // Change this to get a different world
+const SEED = '6cd651fc7243c8ef314ef185d33971b6'; // Change this to get a different world
 
 // Create a seeded PRNG for deterministic noise
 const prng = alea(SEED);
