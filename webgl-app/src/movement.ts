@@ -1,6 +1,6 @@
 import * as Three from 'three';
 
-const movement = { forward: false, backward: false, left: false, right: false, rotationLeft: false, rotationRight: false, rotationUp: false, rotationDown: false };
+const movement = { reset: false, resetRotation: false, forward: false, backward: false, left: false, right: false, rotationLeft: false, rotationRight: false, rotationUp: false, rotationDown: false };
 const speed = 0.1;
 const rotationSpeed = 0.02;
 
@@ -37,10 +37,18 @@ window.addEventListener('keydown', (e: KeyboardEvent) => {
         movement.right = true;
       }
       break;
+    case 'r': {
+      if(e.shiftKey) {
+        movement.resetRotation = true;
+      } else {
+        movement.reset = true;
+      }
+    }
   }
 });
 
 window.addEventListener('keyup', (e: KeyboardEvent) => {
+  movement.reset = movement.resetRotation = false;
   switch (e.key.toLowerCase()) {
     case 'w': movement.forward = movement.rotationDown = false; break;
     case 's': movement.backward = movement.rotationUp = false; break;
@@ -71,6 +79,14 @@ const updateMovement = (camera: Three.PerspectiveCamera) => {
   if (movement.rotationRight) camera.rotation.y -= rotationSpeed;
   if (movement.rotationUp) camera.rotation.x += rotationSpeed;
   if (movement.rotationDown) camera.rotation.x -= rotationSpeed;
+
+  if (movement.reset) {
+    camera.position.set(0, 20, 20);
+    camera.lookAt(0, 0, 0);
+  }
+  if (movement.resetRotation) {
+    camera.rotation.set(0, 0, 0);
+  }
 };
 
 export default updateMovement;
