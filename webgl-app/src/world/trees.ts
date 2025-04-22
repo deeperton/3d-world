@@ -80,7 +80,7 @@ export function animateTrees(freqData: number[][]) {
 
 // Generate multiple trees based on noise
 export function generateTrees(size: number, count: number): Three.Group {
-  const pathFunc = getPath(); // Дороги у нас без дерев
+  const pathFunc = getPath();
   const trees = new Three.Group();
   const maxTreeHeight = getMaxTreeHeight(size);
   const noise = getNoise();
@@ -112,7 +112,7 @@ export function generateTrees(size: number, count: number): Three.Group {
       const tree = createTree(x, z);
       tree.userData.freqIndexX = freqX;
       tree.userData.freqIndexY = freqY;
-      tree.userData.originalY = tree.position.y; // Запам’ятовуємо початкову висоту
+      tree.userData.originalY = tree.position.y;
 
       trees.add(tree);
       if (trees.children.length >= count) return trees;
