@@ -2,12 +2,36 @@ import * as Three from 'three';
 import { getHeight, getMaxTreeHeight, getNoise, getPath } from './terrain.ts';
 import { FREQ_BINS_X, FREQ_BINS_Y } from '../sound/interfaces.ts';
 
+function cone() {
+  return new Three.ConeGeometry(1.5, 3, 8);
+}
+
+function cylinder() {
+  return new Three.CylinderGeometry(0.5, 0.8, 2);
+}
+
+function sphere() {
+  return new Three.SphereGeometry(1.5, 8, 8);
+}
+
+function dodecahedron() {
+  return new Three.DodecahedronGeometry(1.5, 1);
+}
+
+const treeShapes = [cone, cylinder, sphere, dodecahedron];
+
+// Function to randomly select a tree shape
+function getRandomTreeShape() {
+  const randomIndex = Math.floor(Math.random() * treeShapes.length);
+  return treeShapes[randomIndex]();
+}
+
 // Create a single tree
 function createTree(x: number, z: number): Three.Group {
   const tree = new Three.Group();
 
   // Trunk
-  const trunkGeometry = new Three.CylinderGeometry(0.3, 0.3, 3);
+  const trunkGeometry = new Three.CylinderGeometry(0.3, 0.3, 2);
   const trunkMaterial = new Three.MeshStandardMaterial({
     color: 0x8B5A2B,
     metalness: 0.1,
@@ -18,7 +42,7 @@ function createTree(x: number, z: number): Three.Group {
   tree.add(trunk);
 
   // Leaves (glass effect)
-  const leavesGeometry = new Three.ConeGeometry(1.5, 3, 8);
+  const leavesGeometry = getRandomTreeShape();
   const leavesMaterial = new Three.MeshPhysicalMaterial({
     color: 0x88e1f2,
     transparent: true,
@@ -81,7 +105,7 @@ export function generateTrees(size: number, count: number): Three.Group {
       const y = getHeight(x, z);
       if (y >= maxTreeHeight) continue;
 
-      // **Частотні індекси**
+      // Calculate frequency indices based on tree position
       const freqX = Math.floor(((x + size / 2) / size) * FREQ_BINS_X);
       const freqY = Math.floor(((y + maxTreeHeight) / maxTreeHeight) * FREQ_BINS_Y);
 
