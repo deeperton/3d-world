@@ -6,16 +6,30 @@ import { FREQ_BINS_X, FREQ_BINS_Y } from '../sound/interfaces.ts';
 function createTree(x: number, z: number): Three.Group {
   const tree = new Three.Group();
 
-  // Tree trunk
+  // Trunk
   const trunkGeometry = new Three.CylinderGeometry(0.3, 0.3, 3);
-  const trunkMaterial = new Three.MeshStandardMaterial({ color: 0x8B5A2B });
+  const trunkMaterial = new Three.MeshStandardMaterial({
+    color: 0x8B5A2B,
+    metalness: 0.1,
+    roughness: 0.8
+  });
   const trunk = new Three.Mesh(trunkGeometry, trunkMaterial);
   trunk.position.set(0, 1.5, 0);
   tree.add(trunk);
 
-  // Tree leaves
+  // Leaves (glass effect)
   const leavesGeometry = new Three.ConeGeometry(1.5, 3, 8);
-  const leavesMaterial = new Three.MeshStandardMaterial({ color: 0x228B22 });
+  const leavesMaterial = new Three.MeshPhysicalMaterial({
+    color: 0x88e1f2,
+    transparent: true,
+    opacity: 0.5,
+    roughness: 0,
+    transmission: 1,
+    thickness: 0.5,
+    metalness: 0.2,
+    clearcoat: 1,
+    clearcoatRoughness: 0
+  });
   const leaves = new Three.Mesh(leavesGeometry, leavesMaterial);
   leaves.position.set(0, 3, 0);
   tree.add(leaves);
