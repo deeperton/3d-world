@@ -12,6 +12,7 @@ import { generateSphere } from './world/sky.ts';
 import {fps} from './tools/fps.ts';
 
 import { playAudioAndAnalyze } from './sound/mp3.ts';
+import { generateWater, updateWater } from './world/water.ts';
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -44,10 +45,16 @@ scene.add(plane);
 // camera
 camera.position.set(0, 45, 45);
 
+const water = generateWater(50, -2);
+scene.add(water);
+
+const clock = new Three.Clock();
 
 camera.lookAt(0, 0, 0);
 const animate = () => {
   requestAnimationFrame(animate);
+  const elapsed = clock.getElapsedTime();
+  updateWater(water, elapsed);
   updateMovement(camera); // reacting to keyboard to articulate the camera
   renderer.render(scene, camera);
 };
