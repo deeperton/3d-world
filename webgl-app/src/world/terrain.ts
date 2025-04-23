@@ -179,7 +179,9 @@ export function generateTerrain(size: number): THREE.Mesh {
   const terrainFunc = getCurrentTerrainFunction();
   const mathPath = getPath();
 
-  const geometry = new THREE.PlaneGeometry(size, size, size, size);
+  const resolution = 500; // 1000 gives more detail but consumes more energy
+  const geometry = new THREE.PlaneGeometry(size, size, resolution, resolution);
+
   geometry.rotateX(-Math.PI / 2);
 
   const vertices = geometry.attributes.position.array as Float32Array;
@@ -191,26 +193,36 @@ export function generateTerrain(size: number): THREE.Mesh {
     const y = getHeight(x, z, terrainFunc, mathPath);
     vertices[i + 1] = y;
 
-    const minHeight = RIVER_HEIGHT;
     const maxHeight = 10;
-    const normalizedHeight = (y - minHeight) / (maxHeight - minHeight);
+
     let color: THREE.Color;
-    if (y < RIVER_HEIGHT + 0.0001) {
+
+    const sandHeight = RIVER_HEIGHT + 1.5; // sand
+
+    if (y < RIVER_HEIGHT + 0.1) {
+      // deep water
+      color = new THREE.Color(0x0373fc); // clear blue
+    } else if (y < sandHeight) {
+      // sand
+      const t = (y - RIVER_HEIGHT) / (sandHeight - RIVER_HEIGHT); // normalize between 0 and 1
       color = new THREE.Color().lerpColors(
-        new THREE.Color(0x0373fc),
-        new THREE.Color(0x4caf50), // Light Green
-        //new THREE.Color(0x03f8fc),
-        normalizedHeight
+        new THREE.Color(0x0373fc), // вода
+        new THREE.Color(0xC2B280), // пісок
+        t
       );
     } else {
+      // the rest of the terrain
+      const greenMin = sandHeight;
+      const greenMax = maxHeight;
+      const t = (y - greenMin) / (greenMax - greenMin); // normalize between 0 and 1
       color = new THREE.Color().lerpColors(
-        new THREE.Color(0x1b5e20), // Dark Green
-        new THREE.Color(0x4caf50), // Light Green
-        normalizedHeight
+        new THREE.Color(0x1b5e20), // dark green
+        new THREE.Color(0x4caf50), // light green
+        t
       );
     }
-    colors.push(color.r, color.g, color.b);
 
+    colors.push(color.r, color.g, color.b);
   }
 
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
