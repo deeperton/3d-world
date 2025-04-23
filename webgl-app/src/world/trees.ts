@@ -38,7 +38,7 @@ function createTree(x: number, z: number): Three.Group {
     roughness: 0.8
   });
   const trunk = new Three.Mesh(trunkGeometry, trunkMaterial);
-  trunk.position.set(0, 1.5, 0);
+  trunk.position.set(0, 1.0, 0);
   tree.add(trunk);
 
   // Leaves (glass effect)
