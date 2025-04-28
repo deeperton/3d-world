@@ -7,41 +7,55 @@ export function generateWater(size: number, riverHeight: number): Three.Mesh {
   const material = new Three.ShaderMaterial({
     uniforms: {
       uTime: { value: 0 },
-      uColor: { value: new Three.Color(0x6595cf) },
+      uColor: { value: new Three.Color(0x487fc2) },
     },
     vertexShader: `
-      uniform float uTime;
       varying vec2 vUv;
-      
-      // random number generator
-      float random(vec2 st) {
-          return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
-      }
 
       void main() {
         vUv = uv;
-        vec3 pos = position;
-        
-        // Dribble waves, small fast noise imitation
-        pos.y += sin((pos.x + uTime * 2.0) * 4.0) * random(vUv);
-        pos.y += cos((pos.z + uTime * 1.4) * 5.0) * random(vUv);
-
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
     `,
     fragmentShader: `
+      uniform float uTime;
       uniform vec3 uColor;
       varying vec2 vUv;
 
+      float random(vec2 st) {
+        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+      }
+
+      float noise(vec2 st) {
+        vec2 i = floor(st);
+        vec2 f = fract(st);
+
+        float a = random(i);
+        float b = random(i + vec2(1.0, 0.0));
+        float c = random(i + vec2(0.0, 1.0));
+        float d = random(i + vec2(1.0, 1.0));
+
+        vec2 u = f * f * (3.0 - 2.0 * f);
+
+        return mix(
+          mix(a, b, u.x),
+          mix(c, d, u.x),
+          u.y
+        );
+      }
+
       void main() {
-        gl_FragColor = vec4(uColor, 0.8);
+        vec2 st = vUv * 10.0; 
+        float n = noise(st + uTime * 0.1);
+
+        gl_FragColor = vec4(uColor * (0.7 + n * 0.3), 0.7);
       }
     `,
     transparent: true,
   });
 
   const mesh = new Three.Mesh(geometry, material);
-  mesh.position.y = riverHeight + 0.0005;
+  mesh.position.y = riverHeight + 0.08;
 
   return mesh;
 }
