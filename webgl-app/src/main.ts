@@ -63,7 +63,7 @@ const animate = () => {
   updateMovement(camera); // reacting to keyboard to articulate the camera
   renderer.render(scene, camera);
   fireworkTimer += delta;
-  if (fireworkTimer > 2.5) {
+  if (fireworkTimer > 2) {
     const pos = new Three.Vector3(
       (Math.random() - 0.5) * 80,
       0,
