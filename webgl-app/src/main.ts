@@ -12,7 +12,8 @@ import { generateSphere } from './world/sky.ts';
 import {fps} from './tools/fps.ts';
 
 import { playAudioAndAnalyze } from './sound/mp3.ts';
-import { generateWater, updateWater } from './world/water.ts';
+// import { generateWater, updateWater } from './world/water.ts';
+import { Firework } from './world/fireworks.ts';
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -48,15 +49,35 @@ camera.position.set(0, 45, 45);
 // const water = generateWater(WORLD_SIZE, -2.0);
 // scene.add(water);
 
+const fireworks: Firework[] = [];
+let fireworkTimer = 0;
+
 const clock = new Three.Clock();
 
 camera.lookAt(0, 0, 0);
 const animate = () => {
   requestAnimationFrame(animate);
-  const elapsed = clock.getElapsedTime();
+  // const elapsed = clock.getElapsedTime();
+  const delta = clock.getDelta();
   // updateWater(water, elapsed);
   updateMovement(camera); // reacting to keyboard to articulate the camera
   renderer.render(scene, camera);
+  fireworkTimer += delta;
+  if (fireworkTimer > 2.5) {
+    const pos = new Three.Vector3(
+      (Math.random() - 0.5) * 80,
+      0,
+      (Math.random() - 0.5) * 80
+    );
+    const fw = new Firework(pos);
+    scene.add(fw.mesh);
+    fireworks.push(fw);
+    fireworkTimer = 0;
+  }
+
+  for (const fw of fireworks) {
+    fw.update(delta, scene);
+  }
 };
 
 animate();
