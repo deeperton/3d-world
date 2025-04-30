@@ -45,8 +45,8 @@ scene.add(plane);
 // camera
 camera.position.set(0, 45, 45);
 
-const water = generateWater(WORLD_SIZE, -2.0);
-scene.add(water);
+// const water = generateWater(WORLD_SIZE, -2.0);
+// scene.add(water);
 
 const clock = new Three.Clock();
 
@@ -54,7 +54,7 @@ camera.lookAt(0, 0, 0);
 const animate = () => {
   requestAnimationFrame(animate);
   const elapsed = clock.getElapsedTime();
-  updateWater(water, elapsed);
+  // updateWater(water, elapsed);
   updateMovement(camera); // reacting to keyboard to articulate the camera
   renderer.render(scene, camera);
 };

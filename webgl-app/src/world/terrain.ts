@@ -12,7 +12,13 @@ const SEED = 'Sasha';
 const prng = alea(SEED);
 const noise = SimplexNoise.createNoise2D(prng);
 
-const RIVER_HEIGHT = -2;
+const RIVER_HEIGHT = -2.8;
+
+const DEEP_WATER_COLOR = 0x2e61bf;
+const SAND_COLOR = 0xC2B280;
+const DARK_GREEN_COLOR = 0x1b5e20;
+const LIGHT_GREEN_COLOR = 0x4caf50;
+const CLEAR_WATER_COLOR = 0x0373fc;
 
 // Define a type for custom math terrain functions
 export type TerrainFunction = (x: number, z: number) => number;
@@ -69,25 +75,25 @@ export interface MathPath {
 export const possiblePaths = {
   sinWave: {
     pathFunction: (x: number) => Math.sin(x * 0.1) * 15, // Sine wave path
-    pathWidth: 5,         // 5 units wide
+    pathWidth: 2,         // 5 units wide
     pathHeight: RIVER_HEIGHT,       // Slightly below ground level (like a river)
-    blendWidth: 3         // 3 units of smooth blending on each side
+    blendWidth: 2.3         // 3 units of smooth blending on each side
   } as MathPath,
   flat: {
     pathFunction: () => 0, // Flat path
-    pathWidth: 10,          // 10 units wide
+    pathWidth: 3,          // 10 units wide
     pathHeight: RIVER_HEIGHT,          // Ground level
     blendWidth: 2           // 2 units of smooth blending on each side
   } as MathPath,
   cosWave: {
     pathFunction: (x: number) => Math.cos(x * 0.1) * 15, // Cosine wave path
-    pathWidth: 5,          // 5 units wide
+    pathWidth: 3,          // 5 units wide
     pathHeight: RIVER_HEIGHT,        // Slightly below ground level
     blendWidth: 3          // 3 units of smooth blending on each side
   } as MathPath,
   parabolicWave: {
     pathFunction: (x: number) => Math.pow(x, 2) * 0.1, // Parabolic path
-    pathWidth: 5,          // 5 units wide
+    pathWidth: 3,          // 5 units wide
     pathHeight: RIVER_HEIGHT,        // Slightly below ground level
     blendWidth: 3          // 3 units of smooth blending on each side
   } as MathPath,
@@ -136,7 +142,7 @@ export function getHeight(x: number, z: number, terrainFunc: TerrainFunction = w
   const distanceFromPath = Math.abs(z - pathZ);
 
   // If inside the path, use the path height
-  if (distanceFromPath < mathPath.pathWidth / 2) {
+  if (distanceFromPath < mathPath.pathWidth / 1.3) {
     return mathPath.pathHeight;
   }
   // If in the blend zone, smoothly transition from path to terrain
@@ -201,13 +207,13 @@ export function generateTerrain(size: number): THREE.Mesh {
 
     if (y < RIVER_HEIGHT + 0.1) {
       // deep water
-      color = new THREE.Color(0x0373fc); // clear blue
+      color = new THREE.Color(DEEP_WATER_COLOR); // clear blue
     } else if (y < sandHeight) {
       // sand
       const t = (y - RIVER_HEIGHT) / (sandHeight - RIVER_HEIGHT); // normalize between 0 and 1
       color = new THREE.Color().lerpColors(
-        new THREE.Color(0x0373fc), // вода
-        new THREE.Color(0xC2B280), // пісок
+        new THREE.Color(CLEAR_WATER_COLOR), // clear blue
+        new THREE.Color(SAND_COLOR), // sandy color
         t
       );
     } else {
@@ -216,8 +222,8 @@ export function generateTerrain(size: number): THREE.Mesh {
       const greenMax = maxHeight;
       const t = (y - greenMin) / (greenMax - greenMin); // normalize between 0 and 1
       color = new THREE.Color().lerpColors(
-        new THREE.Color(0x1b5e20), // dark green
-        new THREE.Color(0x4caf50), // light green
+        new THREE.Color(DARK_GREEN_COLOR), // dark green
+        new THREE.Color(LIGHT_GREEN_COLOR), // light green
         t
       );
     }
