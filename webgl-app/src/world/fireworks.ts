@@ -50,7 +50,7 @@ export class Firework {
   }
 
   explode(scene: THREE.Scene) {
-    const count = 50;
+    const count = Math.round(Math.random() * 100 + 50);
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
