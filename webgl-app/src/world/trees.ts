@@ -1,5 +1,5 @@
 import * as Three from 'three';
-import { getHeight, getMaxTreeHeight, getNoise } from './terrain.ts';
+import { getHeight, getMaxTreeHeight, getNoise, getPath } from './terrain.ts';
 
 // Create a single tree
 function createTree(x: number, z: number): Three.Group {
@@ -26,10 +26,9 @@ function createTree(x: number, z: number): Three.Group {
   return tree;
 }
 
-
-
 // Generate multiple trees based on noise
 export function generateTrees(size: number, count: number): Three.Group {
+  const pathFunc = getPath(); // Get the current path function, on the path we don't place trees
   const trees = new Three.Group();
   const maxTreeHeight = getMaxTreeHeight(size);
   const noise = getNoise();
@@ -55,6 +54,15 @@ export function generateTrees(size: number, count: number): Three.Group {
       // Use noise to determine if we place a tree here
       // Scale the coordinates for the noise function
       const noiseValue = noise(x * 0.1, z * 0.1);
+
+      // Calculate the z-position of the path at this x-coordinate
+      const pathZ = pathFunc.pathFunction(x);
+      // Calculate distance from the path center
+      const distanceFromPath = Math.abs(z - pathZ);
+      // If inside the path, we don't place a tree
+      if (distanceFromPath < pathFunc.pathWidth / 1.5) {
+        continue;
+      }
 
       // Only place trees where noise value is positive (creates natural clusters)
       if (noiseValue > 0.2) {

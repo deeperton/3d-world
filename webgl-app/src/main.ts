@@ -1,7 +1,14 @@
 import * as Three from 'three';
-import { generateSphere, generateTerrain } from './world/terrain.ts';
+import {
+  generateTerrain,
+  possiblePaths,
+  setPath,
+  setTerrain,
+  terrainFunctions
+} from './world/terrain.ts';
 import updateMovement from './movement.ts';
 import { generateTrees } from './world/trees.ts';
+import { generateSphere } from './world/sky.ts';
 
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -13,9 +20,16 @@ const TREES_COUNT = 100;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const light = new Three.DirectionalLight(0xffffff, 1);
+const light = new Three.DirectionalLight(0xfffddb, 1);
 light.position.set(10, 10, 10);
 scene.add(light);
+
+const light2 = new Three.AmbientLight(0xfffaad, 0.5);
+light2.position.set(-10, -5, 15);
+scene.add(light2);
+
+setTerrain(terrainFunctions.noise);
+setPath(possiblePaths.sinWave);
 
 // flat surface
 const plane = generateTerrain(WORLD_SIZE);
