@@ -63,8 +63,4 @@ export function playAudioAndAnalyze(updateTrees: (freqData: number[][]) => void)
       }
     }
   });
-  // audioElement.play().then(() => {
-  //   console.log("MP3 відтворюється 🎶");
-  //   processAudio();
-  // }).catch(err => console.error("Помилка програвання аудіо:", err));
 }
