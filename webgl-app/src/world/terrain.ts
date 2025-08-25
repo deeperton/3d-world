@@ -4,10 +4,9 @@ import alea from 'alea';
 
 const SEED = '12dsd3fsd'; // Change this to get a different world
 
-// create a new random function based on the seed
+// Create a seeded PRNG for deterministic noise
 const prng = alea(SEED);
-
-const noise = SimplexNoise.createNoise2D(prng); // DETERMINISTIC SEED-BASED NOISE
+const noise = SimplexNoise.createNoise2D(prng);
 
 // Generate terrain height at given coordinates
 export function getHeight(x: number, z: number): number {
@@ -19,8 +18,8 @@ export function getHeight(x: number, z: number): number {
 
   for (let i = 0; i < octaves; i++) {
     height += noise(x * frequency, z * frequency) * amplitude;
-    amplitude *= 0.0001; // Reduce amplitude
-    frequency *= 1.2; // Increase frequency
+    amplitude *= 0.5; // Reduce amplitude (but not до нуля, як у тебе)
+    frequency *= 2; // Increase frequency
   }
 
   return height;
@@ -32,15 +31,32 @@ export function generateTerrain(size: number): THREE.Mesh {
   geometry.rotateX(-Math.PI / 2);
 
   const vertices = geometry.attributes.position.array as Float32Array;
+  const colors = [];
 
   for (let i = 0; i < vertices.length; i += 3) {
     const x = vertices[i];
     const z = vertices[i + 2];
-    vertices[i + 1] = getHeight(x, z); // Set Y coordinate based on noise
+    const y = getHeight(x, z);
+    vertices[i + 1] = y;
+
+    // Grass gradient (dark green to light green)
+    const minHeight = -5;
+    const maxHeight = 10;
+    const normalizedHeight = (y - minHeight) / (maxHeight - minHeight);
+    const color = new THREE.Color().lerpColors(
+      new THREE.Color(0x1b5e20), // Dark Green
+      new THREE.Color(0x4caf50), // Light Green
+      normalizedHeight
+    );
+    colors.push(color.r, color.g, color.b);
   }
 
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals(); // Fix lighting
 
-  const material = new THREE.MeshStandardMaterial({ color: 0x228B22, wireframe: true });
+  const material = new THREE.MeshStandardMaterial({
+    vertexColors: true, // Enable vertex color interpolation
+  });
+
   return new THREE.Mesh(geometry, material);
 }
