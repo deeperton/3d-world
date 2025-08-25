@@ -4,6 +4,9 @@ const movement = { reset: false, resetRotation: false, forward: false, backward:
 const speed = 0.1;
 const rotationSpeed = 0.02;
 let firstTime = true;
+let isMouseDown = false;
+let lastMousePosition = { x: 0, y: 0 };
+const mouseSensitivity = 0.002;
 
 let position: Three.Vector3;
 let rotation: Three.Euler;
@@ -59,10 +62,52 @@ window.addEventListener('keyup', (e: KeyboardEvent) => {
     case 'a': movement.left = movement.rotationLeft  = false; break;
     case 'd': movement.right = movement.rotationRight = false; break;
   }
-  //save to local storage
+  saveCamera();
+});
+
+// Mouse controls
+window.addEventListener('mousedown', (e: MouseEvent) => {
+  if (e.button === 0) { // Left click
+    isMouseDown = true;
+    lastMousePosition.x = e.clientX;
+    lastMousePosition.y = e.clientY;
+  }
+});
+
+window.addEventListener('mouseup', (e: MouseEvent) => {
+  if (e.button === 0) { // Left click
+    isMouseDown = false;
+    saveCamera();
+  }
+});
+
+window.addEventListener('mousemove', (e: MouseEvent) => {
+  if (isMouseDown) {
+    const deltaX = e.clientX - lastMousePosition.x;
+    const deltaY = e.clientY - lastMousePosition.y;
+
+    // Update camera rotation based on mouse movement
+    // Horizontal movement (deltaX) affects Y rotation (left/right)
+    // Vertical movement (deltaY) affects X rotation (up/down)
+    if (deltaX !== 0) {
+      rotation.y -= deltaX * mouseSensitivity;
+    }
+
+    if (deltaY !== 0) {
+      // Limit up/down rotation to avoid flipping
+      const newRotationX = rotation.x - deltaY * mouseSensitivity;
+      rotation.x = Math.max(Math.min(newRotationX, Math.PI / 2), -Math.PI / 2);
+    }
+
+    lastMousePosition.x = e.clientX;
+    lastMousePosition.y = e.clientY;
+  }
+});
+
+function saveCamera() {
   localStorage.setItem('cameraPosition', JSON.stringify(position));
   localStorage.setItem('cameraRotation', JSON.stringify(rotation));
-});
+}
 
 // Update movement in animation loop
 const updateMovement = (camera: Three.PerspectiveCamera) => {
@@ -104,6 +149,11 @@ const updateMovement = (camera: Three.PerspectiveCamera) => {
   }
   if (movement.resetRotation) {
     camera.rotation.set(0, 0, 0);
+  }
+
+  // Apply any mouse rotation updates from the event handlers
+  if (isMouseDown && rotation) {
+    camera.rotation.copy(rotation);
   }
 
   position = camera.position.clone();
