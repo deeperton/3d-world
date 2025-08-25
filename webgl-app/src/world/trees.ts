@@ -21,8 +21,8 @@ function dodecahedron() {
 const treeShapes = [cone, cylinder, sphere, dodecahedron];
 
 // Function to randomly select a tree shape
-function getRandomTreeShape() {
-  const randomIndex = Math.floor(Math.random() * treeShapes.length);
+function getRandomTreeShape(x: number, y: number) {
+  const randomIndex = Math.floor(getNoise()(x * 0.1, y * 0.1) * treeShapes.length) % treeShapes.length;
   return treeShapes[randomIndex]();
 }
 
@@ -42,7 +42,7 @@ function createTree(x: number, z: number): Three.Group {
   tree.add(trunk);
 
   // Leaves (glass effect)
-  const leavesGeometry = getRandomTreeShape();
+  const leavesGeometry = getRandomTreeShape(x, z);
   const leavesMaterial = new Three.MeshPhysicalMaterial({
     color: 0x88e1f2,
     transparent: true,
