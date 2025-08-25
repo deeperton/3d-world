@@ -56,8 +56,6 @@ export function generateSphere(radius: number): THREE.Mesh {
   return new THREE.Mesh(geometry, material);
 }
 
-
-
 // Generate terrain mesh
 export function generateTerrain(size: number): THREE.Mesh {
   const geometry = new THREE.PlaneGeometry(size, size, size, size);
