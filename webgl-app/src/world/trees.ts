@@ -1,5 +1,6 @@
 import * as Three from 'three';
 import { getHeight, getMaxTreeHeight, getNoise, getPath } from './terrain.ts';
+import { FREQ_BINS_X, FREQ_BINS_Y } from '../sound/interfaces.ts';
 
 // Create a single tree
 function createTree(x: number, z: number): Three.Group {
@@ -26,60 +27,59 @@ function createTree(x: number, z: number): Three.Group {
   return tree;
 }
 
+let localTrees: Three.Group | null = null;
+
+export function animateTrees(freqData: number[][]) {
+  if (!localTrees) return;
+
+  localTrees.children.forEach(tree => {
+    const { freqIndexX, freqIndexY, originalY } = tree.userData;
+    const volume = freqData[freqIndexX]?.[freqIndexY] || 0;
+
+    tree.position.y = originalY + volume * 5;
+  });
+}
+
 // Generate multiple trees based on noise
 export function generateTrees(size: number, count: number): Three.Group {
-  const pathFunc = getPath(); // Get the current path function, on the path we don't place trees
+  const pathFunc = getPath(); // Дороги у нас без дерев
   const trees = new Three.Group();
   const maxTreeHeight = getMaxTreeHeight(size);
   const noise = getNoise();
 
-  // Number of grid cells (more cells = more precise placement)
   const gridSize = Math.ceil(Math.sqrt(count) * 1.5);
-  // const cellSize = size / gridSize;
 
-  // Create a grid for potential tree positions
   for (let gridX = 0; gridX < gridSize; gridX++) {
     for (let gridZ = 0; gridZ < gridSize; gridZ++) {
-      // Convert grid position to world coordinates
       const baseX = (gridX / gridSize - 0.5) * size;
       const baseZ = (gridZ / gridSize - 0.5) * size;
 
-      // Add some variety within the cell
-      const jitterX = 0;//(Math.random() - 0.5) * cellSize * 0.8;
-      const jitterZ = 0;//(Math.random() - 0.5) * cellSize * 0.8;
+      const x = baseX;
+      const z = baseZ;
 
-      const x = baseX + jitterX;
-      const z = baseZ + jitterZ;
-
-      // Use noise to determine if we place a tree here
-      // Scale the coordinates for the noise function
       const noiseValue = noise(x * 0.1, z * 0.1);
-
-      // Calculate the z-position of the path at this x-coordinate
       const pathZ = pathFunc.pathFunction(x);
-      // Calculate distance from the path center
       const distanceFromPath = Math.abs(z - pathZ);
-      // If inside the path, we don't place a tree
-      if (distanceFromPath < pathFunc.pathWidth / 1.5) {
-        continue;
-      }
 
-      // Only place trees where noise value is positive (creates natural clusters)
-      if (noiseValue > 0.2) {
-        const y = getHeight(x, z);
+      if (distanceFromPath < pathFunc.pathWidth / 1.5) continue;
+      if (noiseValue <= 0.2) continue;
 
-        // Only place trees below the maximum tree height
-        if (y < maxTreeHeight) {
-          trees.add(createTree(x, z));
-        }
-      }
+      const y = getHeight(x, z);
+      if (y >= maxTreeHeight) continue;
 
-      // Exit if we've placed enough trees
-      if (trees.children.length >= count) {
-        return trees;
-      }
+      // **Частотні індекси**
+      const freqX = Math.floor(((x + size / 2) / size) * FREQ_BINS_X);
+      const freqY = Math.floor(((y + maxTreeHeight) / maxTreeHeight) * FREQ_BINS_Y);
+
+      const tree = createTree(x, z);
+      tree.userData.freqIndexX = freqX;
+      tree.userData.freqIndexY = freqY;
+      tree.userData.originalY = tree.position.y; // Запам’ятовуємо початкову висоту
+
+      trees.add(tree);
+      if (trees.children.length >= count) return trees;
     }
   }
-
+  localTrees = trees;
   return trees;
 }
