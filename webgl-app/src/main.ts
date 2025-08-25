@@ -1,10 +1,14 @@
 import * as Three from 'three';
 import { generateSphere, generateTerrain } from './world/terrain.ts';
 import updateMovement from './movement.ts';
+import { generateTrees } from './world/trees.ts';
 
 const scene = new Three.Scene();
 const camera = new Three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new Three.WebGLRenderer({ antialias: true });
+
+const WORLD_SIZE = 80;
+const TREES_COUNT = 100;
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -14,8 +18,10 @@ light.position.set(10, 10, 10);
 scene.add(light);
 
 // flat surface
-const plane = generateTerrain(80);
+const plane = generateTerrain(WORLD_SIZE);
 const sphere = generateSphere(60);
+const trees = generateTrees(WORLD_SIZE, TREES_COUNT); // 100 дерев на мапі 50x50
+scene.add(trees);
 scene.add(sphere);
 scene.add(plane);
 

@@ -25,6 +25,24 @@ export function getHeight(x: number, z: number): number {
   return height;
 }
 
+// Calculate max height for tree placement
+export function getMaxTreeHeight(size: number, maxY: number = 10, maxTreeHeight = -Infinity): number {
+  for (let x = -size / 2; x < size / 2; x++) {
+    for (let z = -size / 2; z < size / 2; z++) {
+      const height = getHeight(x, z);
+      if (height < maxY && height > maxTreeHeight) { // Trees grow up to height 10
+        maxTreeHeight = height;
+      }
+    }
+  }
+
+  return maxTreeHeight;
+}
+
+export function getNoise() {
+  return noise;
+}
+
 //generate a sphere around the terrain
 export function generateSphere(radius: number): THREE.Mesh {
   const geometry = new THREE.SphereGeometry(radius, 32, 32);
