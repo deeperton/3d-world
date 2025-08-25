@@ -45,7 +45,7 @@ scene.add(plane);
 // camera
 camera.position.set(0, 45, 45);
 
-const water = generateWater(WORLD_SIZE, -2.6);
+const water = generateWater(WORLD_SIZE, -2.0);
 scene.add(water);
 
 const clock = new Three.Clock();
